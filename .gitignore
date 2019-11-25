@@ -10,6 +10,8 @@
 .svn/
 ./assets/cfg/app_settings.json
 
+/swagger/
+swagger/
 # IntelliJ related
 *.iml
 *.ipr
