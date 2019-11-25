@@ -8,7 +8,8 @@
 .buildlog/
 .history
 .svn/
-
+/swagger/
+swagger/
 # IntelliJ related
 *.iml
 *.ipr
