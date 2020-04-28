@@ -6,6 +6,7 @@ import 'package:global_configuration/global_configuration.dart';
 
 Future<String> getUser() async {
   // produces a request object
+
   print("entering getUser");
   String url = 'https://apisandbox.openbankproject.com/obp/v3.0.0/users/current';
   print(GlobalConfiguration().getString("direct_login_token"));
@@ -15,9 +16,10 @@ Future<String> getUser() async {
 }
 
 
-void main(){
-  GlobalConfiguration().loadFromPath("/home/work/.StudioProjects/hello_obp_flutter/assets/cfg/app_settings.json");
-  runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await GlobalConfiguration().loadFromAsset("app_settings");
+  runApp(MyApp(user: getUser()));
 }
 
 class MyApp extends StatelessWidget {
