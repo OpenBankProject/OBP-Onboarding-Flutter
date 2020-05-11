@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "657726772022",
+    "firebase_url": "https://obp-api-login.firebaseio.com",
+    "project_id": "obp-api-login",
+    "storage_bucket": "obp-api-login.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:657726772022:android:ab8f669ef5f424b17b9997",
+        "android_client_info": {
+          "package_name": "tesobe.com.hello_obp_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "657726772022-7rkml9j4gc2bapd3t5e4popq74hjtmdl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "tesobe.com.hello_obp_flutter",
+            "certificate_hash": "4989e568b1f3003141b7c88b75d3e35c3ae7af04"
+          }
+        },
+        {
+          "client_id": "657726772022-cmssib6i2tes1e10eenf10a68sr9q9q5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA22Ju4YBq9nLDhvYYjRuPejRxEhrR1gS0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "657726772022-cmssib6i2tes1e10eenf10a68sr9q9q5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
