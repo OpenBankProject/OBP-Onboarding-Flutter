@@ -23,7 +23,7 @@ class _MainPageState extends State<MainPage> {
   List<Widget> _tabs = [
     Tab(
       text: 'Request Access',
-      icon: Icon(CommunityMaterialIcons.comment_question),
+      icon: Icon(CommunityMaterialIcons.account_search),
     ),
     Tab(
       text: 'Customers',
@@ -45,13 +45,12 @@ class _MainPageState extends State<MainPage> {
             // leading: Icon(Icons.menu),
             actions: <Widget>[
               Container(
-                margin: EdgeInsets.only(right: 20),
-                child: Icon(Icons.monetization_on),
+                margin: EdgeInsets.only(right: 15),
+                child: Image.asset('assets/img/logo-header.png', colorBlendMode: BlendMode.darken, scale: 2),
               )
             ],
           ),
           body: TabBarView(
-            // 3. 使用 DefaultTabController 之后，这里不再需要 controller 属性
             // controller: _controller,
             children: _pagelist,
           ),
