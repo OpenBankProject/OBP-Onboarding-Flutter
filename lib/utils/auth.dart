@@ -73,8 +73,13 @@ class AuthUtil {
 
 
   resetHeader(GoogleSignInAccount account) async{
-    var headers = await account.authHeaders;
-    this.authHeaders = headers;
+    final GoogleSignInAuthentication googleSignInAuthentication =
+    await account.authentication;
+
+    authHeaders = {
+      'Authorization': 'Bearer ${googleSignInAuthentication.idToken}',
+      'Content-Type': 'application/json'
+    };
   }
 
   @override
@@ -92,13 +97,7 @@ class AuthUtil {
 
       signInAccount = await _googleSignIn.signIn();
 
-      final GoogleSignInAuthentication googleSignInAuthentication =
-      await signInAccount.authentication;
-
-      authHeaders = {
-        'Authorization': 'Bearer ${googleSignInAuthentication.idToken}',
-        'Content-Type': 'application/json'
-      };
+      resetHeader(signInAccount);
 
       ObpResponse response = await httpRequest.get(constants.currentUserUrl, headers: authHeaders);
       if(response.isSuccess()) {
