@@ -17,12 +17,19 @@ class _RootPageState extends State<RootPage> {
     });
   }
 
-  _logout() async{
+  _logout() async {
     await auth.signOut();
-    setState(() {
-      _isLoggedIn = false;
-    });
+//    setState(() {
+//      _isLoggedIn = false;
+//    });
+    // to avoid error: setState() or markNeedsBuild() called when widget tree was locked.
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => RootPage()),
+      (Route<dynamic> route) => false,
+    );
   }
+
   @override
   Widget build(BuildContext context) {
     return _isLoggedIn ? MainPage(_logout) : LoginPage(_login);

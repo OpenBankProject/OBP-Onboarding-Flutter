@@ -60,8 +60,8 @@ class _MainPageState extends State<MainPage> {
               decoration: BoxDecoration(color: Colors.black87),
               child: ListView(padding: EdgeInsets.zero, children: <Widget>[
                 UserAccountsDrawerHeader(
-                  accountName: Text(''), // temp set account name blank
-                  accountEmail: Text(auth.user.email),
+                  accountName: Text(auth.user.email), // temp set account name to email
+                  accountEmail: Text(''),
                   currentAccountPicture: this._userPhoto(),
                   decoration: BoxDecoration(
                       image: DecorationImage(
@@ -112,7 +112,7 @@ class _MainPageState extends State<MainPage> {
       return Icon(
         Icons.person,
         size: 50,
-        color: Colors.lightGreenAccent,
+        color: Colors.grey,
       );
     }
   }
