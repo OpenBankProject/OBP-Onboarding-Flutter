@@ -238,66 +238,72 @@ class _AuthContextUpdatePageState extends State<AuthContextUpdatePage> {
         progressIndicator: CircularProgressIndicator(),
         child: ListView(
           shrinkWrap: true,
-          padding: EdgeInsets.all(15.0),
+          padding: EdgeInsets.only(left: 35, right: 35),
           children: <Widget>[
-            FormBuilder(
-              key: _fbKey,
-              initialValue: {
-                'confrim_way': 'SMS',
-              },
-              autovalidate: false,
-              child: Column(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Center(
-                        child: Text(
-                      'Request Access to your Accounts',
-                      style: TextStyle(fontSize: 20, color: Colors.blue),
-                    )),
-                  ),
-                  FormBuilderDropdown(
-                    attribute: "bank_id",
-                    decoration: InputDecoration(
-                        labelText: "Which Bank do you want to use?"),
-                    hint: Text('Select Bank'),
-                    validators: [
-                      FormBuilderValidators.required(
-                          errorText: 'Bank is required')
-                    ],
-                    items: banks
-                        .map((bank) => DropdownMenuItem(
-                            value: bank.id, child: Text(bank.full_name)))
-                        .toList(),
-                  ),
-                  FormBuilderTextField(
-                    attribute: "customer_number",
-                    decoration: InputDecoration(
-                        labelText: "Please enter your Customer Number."),
-                    maxLines: 1,
-                    validators: [
-                      FormBuilderValidators.required(
-                          errorText: 'Customer Number is required'),
-                    ],
-                  ),
-                  FormBuilderChoiceChip(
-                      attribute: "confrim_way",
+            Padding(
+              padding: const EdgeInsets.only(top: 40),
+              child: Text(
+                'Request Access to your Accounts',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20, color: Colors.blue),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 40, bottom: 40),
+              child: FormBuilder(
+                key: _fbKey,
+                initialValue: {
+                  'confrim_way': 'SMS',
+                },
+                autovalidate: false,
+                child: Column(
+                  children: <Widget>[
+                    FormBuilderDropdown(
+                      attribute: "bank_id",
                       decoration: InputDecoration(
-                          labelText: "How should we confirm your Identity?"),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5)),
-                      spacing: 20,
-                      options: [
-                        FormBuilderFieldOption(
-                            child: Text("SMS"), value: "SMS"),
-                        FormBuilderFieldOption(
-                            child: Text("EMAIL"), value: "EMAIL"),
-                      ],
+                          icon: Icon(CommunityMaterialIcons.bank),
+                          labelText: "Which Bank do you want to use?"),
+                      hint: Text('Select Bank'),
                       validators: [
                         FormBuilderValidators.required(
-                            errorText: '"Confirm way" is required')
-                      ]),
-                ],
+                            errorText: 'Bank is required')
+                      ],
+                      items: banks
+                          .map((bank) => DropdownMenuItem(
+                              value: bank.id, child: Text(bank.full_name)))
+                          .toList(),
+                    ),
+                    FormBuilderTextField(
+                      attribute: "customer_number",
+                      decoration: InputDecoration(
+                          icon: Icon(CommunityMaterialIcons.keyboard),
+                          labelText: "Please enter your Customer Number."),
+                      maxLines: 1,
+                      validators: [
+                        FormBuilderValidators.required(
+                            errorText: 'Customer Number is required'),
+                      ],
+                    ),
+                    FormBuilderChoiceChip(
+                        attribute: "confrim_way",
+                        decoration: InputDecoration(
+                            icon: Icon(CommunityMaterialIcons.send),
+                            labelText: "How should we confirm your Identity?"),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5)),
+                        spacing: 20,
+                        options: [
+                          FormBuilderFieldOption(
+                              child: Text("SMS"), value: "SMS"),
+                          FormBuilderFieldOption(
+                              child: Text("EMAIL"), value: "EMAIL"),
+                        ],
+                        validators: [
+                          FormBuilderValidators.required(
+                              errorText: '"Confirm way" is required')
+                        ]),
+                  ],
+                ),
               ),
             ),
             Row(
@@ -308,18 +314,18 @@ class _AuthContextUpdatePageState extends State<AuthContextUpdatePage> {
                       "Request Access",
                       style: TextStyle(color: Colors.white),
                     ),
-                    color: Colors.green,
+                    color: Colors.lightBlue,
                     onPressed: this.submitAuthContextUpdate,
                   ),
                 ),
-                Container(padding: EdgeInsets.only(left: 10)),
+                Container(width: 10,),
                 Expanded(
                   child: RaisedButton(
                     child: Text(
                       "Reset Values",
                       style: TextStyle(color: Colors.white),
                     ),
-                    color: Colors.green,
+                    color: Colors.lightBlue,
                     onPressed: () {
                       _fbKey.currentState.reset();
                     },
