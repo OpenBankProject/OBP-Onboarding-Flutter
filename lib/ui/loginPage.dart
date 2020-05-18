@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
 import 'package:hello_obp_flutter/model/model.dart';
 import 'package:hello_obp_flutter/utils/auth.dart';
+import 'package:loading_overlay/loading_overlay.dart';
 
 typedef LoginCallback = void Function(User user);
 
 class LoginPage extends StatefulWidget {
-  final LoginCallback loginFun;
+  final VoidCallback loginFun;
 
   LoginPage(this.loginFun, {key}) : super(key: key);
 
@@ -19,7 +20,9 @@ class _LoginPageState extends State<LoginPage> {
 
   String _userName;
   String _password;
-  String _wrongUserNameOrPassword = '';
+
+  // manage state of modal progress HUD widget
+  bool _isLoading = false;
 
   bool validateAndSave() {
     final form = formKey.currentState;
@@ -30,43 +33,87 @@ class _LoginPageState extends State<LoginPage> {
     return false;
   }
 
-  void validateAndSubmit() async {
+  void validateAndSubmit(BuildContext context) async {
     if (validateAndSave()) {
       try {
-        User user = await googleAuth.signInWithUserNameAndPassword(
+        setState(() {
+          this._isLoading = true;
+        });
+        User user = await auth.signInWithUserNameAndPassword(
             _userName, _password);
         if (user != null) {
-          this.widget.loginFun(user);
+          // dismiss keyboard during async call
+          FocusScope.of(context).requestFocus(FocusNode());
+          this.widget.loginFun();
         } else {
-          setState(() {
-            _wrongUserNameOrPassword = 'Wrong user name or password.';
-          });
+          Scaffold.of(context).showSnackBar(SnackBar(
+              content: Row(
+            children: <Widget>[
+              Icon(
+                Icons.warning,
+                color: Colors.yellow,
+              ),
+              Text('  Incorrect User name or password!'),
+            ],
+          )));
         }
       } catch (e) {
         print('Error: $e');
+        Scaffold.of(context).showSnackBar(SnackBar(
+            content: Row(
+          children: <Widget>[
+            Icon(
+              Icons.warning,
+              color: Colors.yellow,
+            ),
+            Text('  Login fail, for server side error!'),
+          ],
+        )));
+      } finally {
         setState(() {
-          _wrongUserNameOrPassword = 'Error: $e';
+          this._isLoading = false;
         });
       }
     }
   }
-  void googleLogin() async {
-    User user = await googleAuth.sinInWithSocial();
-    if(user != null) {
-      this.widget.loginFun(user);
+
+  void googleLogin(BuildContext context) async {
+    try {
+      setState(() {
+        this._isLoading = true;
+      });
+      User user = await auth.sinInWithSocial();
+      if (user != null) {
+        this.widget.loginFun();
+      } else {
+        Scaffold.of(context).showSnackBar(SnackBar(
+            content: Row(
+          children: <Widget>[
+            Icon(
+              Icons.warning,
+              color: Colors.yellow,
+            ),
+            Text('    Login fail, for server side error! Please retry.'),
+          ],
+        )));
+      }
+    } finally {
+      setState(() {
+        this._isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: Scaffold(
-        backgroundColor: Colors.white,
-        body: Builder(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: LoadingOverlay(
+        isLoading: _isLoading,
+        // demo of some additional parameters
+        opacity: 0.5,
+        progressIndicator: CircularProgressIndicator(),
+        child: Builder(
           builder: (context) => SingleChildScrollView(
             child: Form(
               key: formKey,
@@ -90,17 +137,12 @@ class _LoginPageState extends State<LoginPage> {
                       height: 24.0,
                     ),
                     Text(
-                      "Open Bank",
+                      "Onboarding",
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.green, fontSize: 24.0),
                     ),
                     SizedBox(
                       height: 24.0,
-                    ),
-                    Text(
-                      this._wrongUserNameOrPassword,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.red, fontSize: 15.0),
                     ),
                     Padding(
                       padding:
@@ -180,67 +222,34 @@ class _LoginPageState extends State<LoginPage> {
                         children: <Widget>[
                           Expanded(
                               child: RaisedButton(
-                                child: Text("Login"),
-                                textColor: Colors.white,
-                                color: Colors.green,
-                                onPressed: () {
-                                  Scaffold.of(context).showSnackBar(
-                                      SnackBar(content: Text('Logining...')));
-                                  this.validateAndSubmit();
-                                },
-                              )),
+                            child: Text(
+                              "Login",
+                              style: TextStyle(fontSize: 18),
+                            ),
+                            textColor: Colors.white,
+                            color: Colors.green,
+                            onPressed: () => this.validateAndSubmit(context),
+                          )),
                         ],
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(top: 10.0),
-                      child: Container(
-                        padding: const EdgeInsets.all(15.0),
-                        child: GoogleSignInButton(
-                          onPressed: () {
-                            Scaffold.of(context).showSnackBar(
-                                SnackBar(content: Text('Logining...')));
-                           this.googleLogin();
-                          },
-                          darkMode: true, // default: false
+                      padding: const EdgeInsets.only(top: 10.0),
+                      child: Center(
+                        child: Text(
+                          '- Or -',
+                          style: TextStyle(fontSize: 18),
                         ),
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(
-                        top: 36.0,
+                      padding: EdgeInsets.only(top: 10.0),
+                      child: GoogleSignInButton(
+                        splashColor: Colors.green,
+                        onPressed: () => this.googleLogin(context),
+                        darkMode: true, // default: false
                       ),
-                      child: Container(
-                        child: RichText(
-                            textAlign: TextAlign.center,
-                            text: TextSpan(
-                              style: TextStyle(
-                                fontSize: 16.0,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: "Forgot your password?",
-                                  style: TextStyle(
-                                    color: Color(0xff9B9B9B),
-                                  ),
-                                ),
-                                TextSpan(
-                                  text: "\nTo ",
-                                  style: TextStyle(
-                                    color: Color(0xff9B9B9B),
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                        text: "Recover password",
-                                        style: TextStyle(
-                                          color: Color(0xFF5D86C1),
-                                        ))
-                                  ],
-                                ),
-                              ],
-                            )),
-                      ),
-                    )
+                    ),
                   ],
                 ),
               ),

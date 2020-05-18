@@ -27,6 +27,10 @@ dependencies:
   google_sign_in: ^4.4.4
   flutter_auth_buttons: ^0.8.0
   http: ^0.12.1
+  loading_overlay: ^0.2.1
+  rflutter_alert: ^1.0.3
+  community_material_icon: 3.5.95
+  flutter_form_builder: ^3.9.0
 
 dev_dependencies:
   flutter_test:

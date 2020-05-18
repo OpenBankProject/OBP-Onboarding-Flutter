@@ -1,11 +1,14 @@
 import 'dart:convert';
 
+import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:hello_obp_flutter/model/model.dart';
 import 'package:hello_obp_flutter/utils/auth.dart';
 import 'package:hello_obp_flutter/utils/constant.dart';
 import 'package:hello_obp_flutter/utils/http_utils.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:loading_overlay/loading_overlay.dart';
 
 class AuthContextUpdatePage extends StatefulWidget {
   @override
@@ -13,40 +16,13 @@ class AuthContextUpdatePage extends StatefulWidget {
 }
 
 class _AuthContextUpdatePageState extends State<AuthContextUpdatePage> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  String _bankId = '';
+  final GlobalKey<FormBuilderState> _fbKey = GlobalKey<FormBuilderState>();
+  final GlobalKey<FormState> _answerKey = GlobalKey<FormState>();
 
   List<Bank> banks = List();
-  List<Bank> roleReaderBanks = [Bank(id: '', full_name: 'select one bank')];
+  // manage state of modal progress HUD widget
+  bool _isLoading = false;
 
-  String userAuthContextUpdateId = null;
-  String answer = null;
-  String operationResult = null;
-
-  bool isRolesReady(List<Entitlement> entitlements, String bankId) {
-    bool hasCanCreateCustomer = false;
-    bool hasCanCreateUserCustomerLink = false;
-    bool hasCanCreateUserAuthContextUpdate = false;
-    bool hasCanGetUserAuthContext = false;
-    entitlements.forEach((Entitlement entitlement) {
-      if (entitlement.role_name == 'CanCreateCustomer' &&
-          entitlement.bank_id == bankId) {
-        hasCanCreateCustomer = true;
-      } else if (entitlement.role_name == 'CanCreateUserCustomerLink' &&
-          entitlement.bank_id == bankId) {
-        hasCanCreateUserCustomerLink = true;
-      } else if (entitlement.role_name == 'CanCreateUserAuthContextUpdate') {
-        hasCanCreateUserAuthContextUpdate = true;
-      } else if (entitlement.role_name == 'CanGetUserAuthContext') {
-        hasCanGetUserAuthContext = true;
-      }
-    });
-    return hasCanCreateCustomer &&
-        hasCanCreateUserCustomerLink &&
-        hasCanCreateUserAuthContextUpdate &&
-        hasCanGetUserAuthContext;
-  }
   @override
   void initState() {
     super.initState();
@@ -60,204 +36,250 @@ class _AuthContextUpdatePageState extends State<AuthContextUpdatePage> {
         }
       });
     }
-
-    googleAuth.getEntitlements().then((roles) {
-      var filteredBanks = banks.where((bank){
-            return this.isRolesReady(roles, bank.id);
-          }).toList();
-
-      if(filteredBanks.isNotEmpty) {
-        filteredBanks.insert(0, this.roleReaderBanks[0]);
-        setState(() {
-          this.roleReaderBanks = filteredBanks;
-        });
-      }
-
-    });
   }
 
-  bool validateAndSave() {
-    final form = _formKey.currentState;
-    if (form.validate()) {
-      form.save();
-      return true;
-    }
-    return false;
-  }
 
-  void validateAndSubmit() async {
-    if (validateAndSave()) {
-      try {
-        Map<String, String> authHeaders = googleAuth.authHeaders;
-//        Customer customer = Customer(bank_id: this._color);
-//        var customerJson = jsonEncode(customer.toJson());
-        var j = {
-          "legal_name": "Eveline Tripman",
-          "mobile_phone_number": "+44 07972 444 876",
-          "email": "eveline@example.com",
-          "face_image": {
-            "url": "www.openbankproject",
-            "date": "2017-09-19T00:00:00Z"
-          },
-          "date_of_birth": "2017-09-19T00:00:00Z",
-          "relationship_status": "single",
-          "dependants": 1,
-          "dob_of_dependants": ["2017-09-19T00:00:00Z"],
-          "credit_rating": { "rating": "OBP", "source": "OBP"},
-          "credit_limit": { "currency": "EUR", "amount": "0"},
-          "highest_education_attained": "Master",
-          "employment_status": "worker",
-          "kyc_status": true,
-          "last_ok_date": "2017-09-19T00:00:00Z",
-          "title": "Dr.",
-          "branch_id": "DERBY6",
-          "name_suffix": "Sr"
-        };
-        var customerJson = jsonEncode(j);
-        var createCustomerUrl = constants.createCustomerUrl.replaceFirst('BANK_ID', this._bankId);
-        ObpResponse response = await httpRequest.post(createCustomerUrl, data: customerJson, headers: authHeaders);
-        if(response.isSuccess()) {
-          Customer newCustomer = Customer.fromJson(response.data);
+  void submitAuthContextUpdate() async {
+        if (_fbKey.currentState.saveAndValidate()) {
+          setState(() {
+            this._isLoading = true;
+          });
 
-          var createUserCustomerLinkUrl = constants.createUserCustomerLinkUrl.replaceFirst('BANK_ID', this._bankId);
-          var json = '{  "user_id":"${googleAuth.user.user_id}",  "customer_id":"${newCustomer.customer_id}"}';
-          response = await httpRequest.post(createUserCustomerLinkUrl, headers: authHeaders, data: json);
-          if(response.isSuccess()) {
-            var createAuthContextUpdateUrl = constants.createAuthContextUpdateUrl.replaceFirst('BANK_ID', this._bankId).replaceFirst('SCA_METHOD', 'EMAIL'); // TODO add SMS way.
-            var json = '{  "key":"CUSTOMER_NUMBER",  "value":"${newCustomer.customer_number}"}';
-            response = await httpRequest.post(createAuthContextUpdateUrl, data: json, headers: authHeaders);
-            if(response.isSuccess()) {
-              var userAuthContextUpdateId = response.data['user_auth_context_update_id'] as String;
-              setState(() {
-                this.userAuthContextUpdateId = userAuthContextUpdateId;
-              });
-              print('---------------------:$userAuthContextUpdateId');
+          var formValues = _fbKey.currentState.value;
+          try {
+            var createAuthContextUpdateUrl = constants
+                .createAuthContextUpdateUrl
+                .replaceFirst('BANK_ID', formValues['bank_id']).replaceFirst(
+                'SCA_METHOD', formValues['confrim_way']);
+            var json = '{  "key": "CUSTOMER_NUMBER",  "value": "${formValues['customer_number']}" }';
+            ObpResponse response = await httpRequest.post(
+                createAuthContextUpdateUrl, data: json,
+                headers: auth.authHeaders);
+            if (response.isSuccess()) {
+              var userAuthContextUpdateId = response
+                  .data['user_auth_context_update_id'] as String;
+              print('---------------------user_auth_context_update_id:$userAuthContextUpdateId');
+            setState(() {
+              this._isLoading = false;
+            });
+            _answerKey.currentState?.reset();
+            String answer;
+            // popup
+              Alert(
+                  context: context,
+                  title: "Answer Challenge",
+                  content: Form(
+                    key: _answerKey,
+                    child: Column(
+                        children: <Widget>[
+                          Text('Please check your ${formValues['confrim_way']},\nand input recieved answer.', style: TextStyle(fontSize: 15, color: Colors.blue),),
+                          TextFormField(
+                            decoration: InputDecoration(
+                              icon: Icon(CommunityMaterialIcons.comment_question_outline),
+                              labelText: 'Answer',
+                            ),
+                            onChanged: (value) => answer = value,
+                            validator: (value) => (value == null || value.isEmpty) ? 'Answer is required!' : null
+                          ),
+                        ],
+                      ),
+                  ),
+                  buttons: [
+                    DialogButton(
+                      onPressed: ()=> answerChallenge(userAuthContextUpdateId, answer),
+                      child: Text(
+                        "Answer Challenge",
+                        style: TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                    )
+                  ]).show();
+
+            } else {
+              Scaffold.of(context).showSnackBar(
+                  SnackBar(content: Row(
+                    children: <Widget>[
+                      Icon(Icons.warning, color: Colors.yellow,),
+                      Text(response.message.replaceFirst(
+                          RegExp(r'OBP-\d+: '), ""),
+                          textAlign: TextAlign.left,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                    ],
+                  )));
             }
+          } catch (e) {
+            print('Error: $e');
+            Scaffold.of(context).showSnackBar(
+                SnackBar(content: Row(
+                  children: <Widget>[
+                    Icon(Icons.warning, color: Colors.yellow,),
+                    Text('  Server side error, please try again!'),
+                  ],
+                )));
+          } finally {
+            setState(() {
+              this._isLoading = false;
+            });
           }
-        } else {
-          print(response.message);
         }
-      } catch (e) {
-        print('Error: $e');
-      }
-    }
+
   }
 
-  void answerAuthContextUpdateChallenge()  async {
-    if (validateAndSave()) {
+  void answerChallenge(String userAuthContextUpdateId, String answer)  async {
+    if(_answerKey.currentState.validate()){
+      _answerKey.currentState.save();
+      Navigator.pop(context);
+
       try {
-        Map<String, String> authHeaders = googleAuth.authHeaders;
-        var jsonJson = {  "answer": this.answer};
+        setState(() {
+          this._isLoading = true;
+        });
+        Map<String, String> authHeaders = auth.authHeaders;
+        var jsonJson = {  "answer": answer};
         var json = jsonEncode(jsonJson);
-        var answerAuthContextUpdateChallengeUrl = constants.answerAuthContextUpdateChallengeUrl.replaceFirst('AUTH_CONTEXT_UPDATE_ID', this.userAuthContextUpdateId);
+        var answerAuthContextUpdateChallengeUrl = constants.answerAuthContextUpdateChallengeUrl.replaceFirst('AUTH_CONTEXT_UPDATE_ID', userAuthContextUpdateId);
         ObpResponse response = await httpRequest.post(answerAuthContextUpdateChallengeUrl, data: json, headers: authHeaders);
         if(response.isSuccess()) {
-          setState(() {
-            this.operationResult = 'answer is correct';
-            this.userAuthContextUpdateId = null;
-          });
+          var challengeStatus = response.data['status'] as String;
+          if(challengeStatus == 'ACCEPTED') {
+            Scaffold.of(context).showSnackBar(
+                SnackBar(content: Row(
+                  children: <Widget>[
+                    Icon(CommunityMaterialIcons.hand_peace, color: Colors.green,),
+                    Text('  Success!'),
+                  ],
+                )));
+          } else {
+            Scaffold.of(context).showSnackBar(
+                SnackBar(content: Row(
+                  children: <Widget>[
+                    Icon(Icons.warning, color: Colors.yellow,),
+                    Text('  Answer is not correct!'),
+                  ],
+                )));
+          }
+
         } else {
-          setState(() {
-            this.operationResult = response.message;
-          });
+          print('Error: ${response.message}');
+          Scaffold.of(context).showSnackBar(
+              SnackBar(content: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Icon(Icons.warning, color: Colors.yellow,),
+                  Expanded(child: Text('  Server side error: ${response.message.replaceFirst(RegExp(r'OBP-\d+: '), "")}', overflow: TextOverflow.ellipsis)),
+                ],
+              )));
         }
       } catch (e) {
         print('Error: $e');
+        Scaffold.of(context).showSnackBar(
+            SnackBar(content: Row(
+              children: <Widget>[
+                Icon(Icons.warning, color: Colors.yellow,),
+                Text('  Server side error, please try again!'),
+              ],
+            )));
+      } finally {
+        setState(() {
+          this._isLoading = false;
+        });
+
       }
     }
+
   }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: new SafeArea(
-          top: false,
-          bottom: false,
-          child: new Form(
-              key: _formKey,
-              autovalidate: true,
-              child: new ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        backgroundColor: Colors.white,
+        body: LoadingOverlay(
+        isLoading: _isLoading,
+        // demo of some additional parameters
+        opacity: 0.5,
+        progressIndicator: CircularProgressIndicator(),
+         child: ListView(
+            shrinkWrap: true,
+            padding: EdgeInsets.all(15.0),
+            children: <Widget>[
+              FormBuilder(
+                key: _fbKey,
+                initialValue: {
+                  'confrim_way': 'SMS',
+                },
+                autovalidate: false,
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Center(child: Text('Request Access to your Accounts', style: TextStyle(fontSize: 20, color: Colors.blue),)),
+                    ),
+
+                    FormBuilderDropdown(
+                      attribute: "bank_id",
+                      decoration: InputDecoration(labelText: "Which Bank do you want to use?"),
+                      hint: Text('Select Bank'),
+                      validators: [FormBuilderValidators.required(errorText: 'Bank is required')],
+                      items: banks
+                          .map((bank) => DropdownMenuItem(
+                          value: bank.id,
+                          child: Text(bank.full_name)
+                      )).toList(),
+                    ),
+                    FormBuilderTextField(
+                      attribute: "customer_number",
+                      decoration: InputDecoration(labelText: "Please enter your Customer Number."),
+                      maxLines: 1,
+                      validators: [
+                        FormBuilderValidators.required(errorText: 'Customer Number is required'),
+                      ],
+                    ),
+                    FormBuilderChoiceChip(
+                        attribute: "confrim_way",
+                        decoration: InputDecoration(labelText: "How should we confirm your Identity?"),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                        spacing: 20,
+                        options: [
+                          FormBuilderFieldOption(
+                              child: Text("SMS"),
+                              value: "SMS"
+                          ),
+                          FormBuilderFieldOption(
+                              child: Text("EMAIL"),
+                              value: "EMAIL"
+                          ),
+                        ],
+                        validators: [FormBuilderValidators.required(errorText: '"Confirm way" is required')]
+                    ),
+                  ],
+                ),
+              ),
+              Row(
                 children: <Widget>[
-                  new TextFormField(
-                    decoration: const InputDecoration(
-                      icon: const Icon(Icons.person),
-                      hintText: 'Enter your first and last name',
-                      labelText: 'Name',
+                  Expanded(
+                    child: RaisedButton(
+                      child: Text("Request Access", style: TextStyle(color: Colors.white),),
+                      color: Colors.green,
+                      onPressed: this.submitAuthContextUpdate,
                     ),
                   ),
-                  new TextFormField(
-                    decoration: const InputDecoration(
-                      icon: const Icon(Icons.calendar_today),
-                      hintText: 'Enter your date of birth',
-                      labelText: 'Dob',
+                  Container(padding: EdgeInsets.only(left: 10)),
+                  Expanded(
+                    child: RaisedButton(
+                      child: Text("Reset Values", style: TextStyle(color: Colors.white),),
+                      color: Colors.green,
+                      onPressed: () {
+                        _fbKey.currentState.reset();
+                      },
                     ),
-                    keyboardType: TextInputType.datetime,
                   ),
-                  new TextFormField(
-                    decoration: const InputDecoration(
-                      icon: const Icon(Icons.phone),
-                      hintText: 'Enter a phone number',
-                      labelText: 'Phone',
-                    ),
-                    keyboardType: TextInputType.phone,
-                    inputFormatters: [
-                      WhitelistingTextInputFormatter.digitsOnly,
-                    ],
-                  ),
-                  new TextFormField(
-                    decoration: const InputDecoration(
-                      icon: const Icon(Icons.email),
-                      hintText: 'Enter a email address',
-                      labelText: 'Email',
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      icon: const Icon(Icons.view_module),
-                      hintText: 'Select a bank',
-                      labelText: 'Bank',
-                    ),
-                    value: _bankId == '' ? null : _bankId,
-                    onChanged: (value){
-                      setState(() {
-                        _bankId = value;
-                      });
-                    },
-                    validator: (value) => value == null || value.isEmpty ? 'bank is required' : null,
-                    items:
-                    roleReaderBanks.map<DropdownMenuItem<String>>((Bank bank) {
-                      return DropdownMenuItem<String>(
-                        value: bank.id,
-                        child: Text(bank.full_name),
-                      );
-                    }).toList(),
-                  ),
-                  Container(
-                       child: userAuthContextUpdateId != null ? TextFormField(
-                        decoration: InputDecoration(
-                          icon: const Icon(Icons.question_answer),
-                          hintText: 'Enter ansewer by check your email.',
-                          labelText: 'Answer',
-                        ),
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) => value == null || value.isEmpty ? 'answer is required' : null,
-                         onChanged: (value){
-                          setState(() {
-                           answer = value;
-                         });},
-                      ): Divider(),
-                  ),
-                  Container(
-                      padding: const EdgeInsets.only(left: 40.0, right: 40.0, top: 20.0),
-                      child: RaisedButton(
-                        child: userAuthContextUpdateId == null ? Text('Create User Auth Context Update') : Text('Answer Auth Context Update Challenge.'),
-                        onPressed: userAuthContextUpdateId == null ? this.validateAndSubmit : this.answerAuthContextUpdateChallenge,
-                      )),
-                  operationResult == null ? Divider(): Text(this.operationResult, style: TextStyle(color: Colors.blue, fontSize: 20),),
                 ],
-              ))),
-    );
+              )
+            ],
+            ),
+        ),
+       );
   }
 }
+

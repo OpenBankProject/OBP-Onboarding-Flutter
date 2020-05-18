@@ -1,9 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:hello_obp_flutter/model/model.dart';
 import 'package:http/http.dart';
-import 'constant.dart';
 import 'package:http/http.dart' as http;
 
 class HttpRequest {
@@ -28,7 +26,7 @@ class HttpRequest {
   }
 
   ObpResponse _extractResponse(Response response) {
-    if(response.statusCode.toString().startsWith('20')) {
+    if(200 <= response.statusCode && response.statusCode <=299) {
       var body = jsonDecode(response.body);
       return ObpResponse(code: response.statusCode, data: body);
     } else {

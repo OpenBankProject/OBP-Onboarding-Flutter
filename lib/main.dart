@@ -1,49 +1,17 @@
 import 'package:flutter/material.dart';
-import 'model/model.dart';
-import 'ui/login.dart';
-import 'ui/mainPage.dart';
-import 'utils/auth.dart';
-
+import 'package:hello_obp_flutter/ui/rootPage.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    return _MyAppState();
-  }
-}
-
-class _MyAppState extends State<MyApp> {
-  bool _isLoggedIn = false;
-  User _user;
-
-  _login(User user) async {
-    //Scaffold.of(context).showSnackBar(SnackBar(content:Text('Logining...')));
-
-    try {
-      setState(() {
-        _isLoggedIn = true;
-        _user = user;
-      });
-    } on Exception catch (err) {
-      print(err);
-    }
-  }
-
-  _logout() async {
-    await googleAuth.signOut();
-    setState(() {
-      _isLoggedIn = false;
-      _user = null;
-    });
-  }
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Open Bank",
-      home: _isLoggedIn ? MainPage(user:_user, logout: _logout) : LoginPage(_login),
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: RootPage()
     );
   }
 }

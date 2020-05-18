@@ -5,7 +5,11 @@ import 'package:hello_obp_flutter/model/model.dart';
 import 'constant.dart';
 import 'http_utils.dart';
 
-abstract class BaseAuth {
+class AuthUtil {
+  AuthUtil._privateConstructor();
+
+  static final AuthUtil instance = AuthUtil._privateConstructor();
+
   User user;
 
   Map<String, String> authHeaders = {};
@@ -43,11 +47,6 @@ abstract class BaseAuth {
 
   }
 
-  Future<void> signOut() async {
-    user = null;
-    authHeaders = {};
-  }
-
   Future<List<Entitlement>> getEntitlements() async {
     ObpResponse response  = await httpRequest.get(constants.currentUserUrl, headers: authHeaders);
 
@@ -60,13 +59,7 @@ abstract class BaseAuth {
     }
   }
 
-  Future<User> sinInWithSocial();
-}
-
-class GoogleAuth extends BaseAuth {
-  GoogleAuth._privateConstructor();
-
-  static final GoogleAuth instance = GoogleAuth._privateConstructor();
+  // google login related
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -78,38 +71,60 @@ class GoogleAuth extends BaseAuth {
   );
   GoogleSignInAccount signInAccount;
 
+
+  resetHeader(GoogleSignInAccount account) async{
+    var headers = await account.authHeaders;
+    this.authHeaders = headers;
+  }
+
   @override
   Future<User> sinInWithSocial() async {
 
-    signInAccount = await _googleSignIn.signIn();
-    final GoogleSignInAuthentication googleSignInAuthentication =
-    await signInAccount.authentication;
+    _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount account){
+      resetHeader(account);
+    });
+//    _googleSignIn.signInSilently();
 
-//    final AuthCredential credential = GoogleAuthProvider.getCredential(
-//      accessToken: googleSignInAuthentication.accessToken,
-//      idToken: googleSignInAuthentication.idToken,
-//    );
-//
-//    final AuthResult authResult =
-//    await _auth.signInWithCredential(credential);
-//    final FirebaseUser user = authResult.user;
+    try {
+      if(await _googleSignIn.isSignedIn()) {
+        _googleSignIn.signOut();
+      }
 
-    authHeaders = {
-      'Authorization': 'Bearer ${googleSignInAuthentication.idToken}',
-      'Content-Type': 'application/json'
-    };
-    ObpResponse response = await httpRequest.get(constants.currentUserUrl, headers: authHeaders);
-    user = User.fromJson(response.data);
-    user.photoUrl = signInAccount.photoUrl;
+      signInAccount = await _googleSignIn.signIn();
+
+      final GoogleSignInAuthentication googleSignInAuthentication =
+      await signInAccount.authentication;
+
+      authHeaders = {
+        'Authorization': 'Bearer ${googleSignInAuthentication.idToken}',
+        'Content-Type': 'application/json'
+      };
+
+      ObpResponse response = await httpRequest.get(constants.currentUserUrl, headers: authHeaders);
+      if(response.isSuccess()) {
+        user = User.fromJson(response.data);
+        user.photoUrl = signInAccount.photoUrl;
+      } else {
+        user = null;
+        print(response.message);
+      }
+    } on Exception catch (e) {
+      print(e);
+    }
+
     return user;
   }
 
   Future<void> signOut() async {
     user = null;
     authHeaders = {};
-    _googleSignIn.signOut();
+    try {
+      _googleSignIn.signOut();
+    } on Exception catch (e) {
+      print(e);
+    }
   }
 
 }
 
-GoogleAuth googleAuth = GoogleAuth.instance;
+AuthUtil auth = AuthUtil.instance;
