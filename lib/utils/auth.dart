@@ -91,10 +91,6 @@ class AuthUtil {
 //    _googleSignIn.signInSilently();
 
     try {
-      if(await _googleSignIn.isSignedIn()) {
-        _googleSignIn.signOut();
-      }
-
       signInAccount = await _googleSignIn.signIn();
 
       resetHeader(signInAccount);

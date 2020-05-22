@@ -1,3 +1,4 @@
+import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
 import 'package:hello_obp_flutter/model/model.dart';
@@ -245,10 +246,10 @@ class _LoginPageState extends State<LoginPage> {
                     Padding(
                       padding: EdgeInsets.only(top: 10.0),
                       child: GoogleSignInButton(
-                        splashColor: Colors.green,
-                        onPressed: () => this.googleLogin(context),
-                        darkMode: true, // default: false
-                      ),
+                      splashColor: Colors.green,
+                      onPressed: () => this.googleLogin(context),
+                      darkMode: true, // default: false
+                    ),
                     ),
                   ],
                 ),
