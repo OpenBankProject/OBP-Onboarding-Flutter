@@ -103,34 +103,26 @@ class _AuthContextUpdatePageState extends State<AuthContextUpdatePage> {
               ]).show();
         } else {
           Scaffold.of(context).showSnackBar(SnackBar(
-            content: Row(
-              children: <Widget>[
-                Icon(
-                  Icons.warning,
-                  color: Colors.yellow,
-                ),
-                Expanded(
-                  child: Text(
-                      response.message.replaceFirst(RegExp(r'OBP-\d+: '), ""),
-                      textAlign: TextAlign.left,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                ),
-              ],
+            content: ListTile(leading: Icon(
+              Icons.warning,
+              color: Colors.yellow,
+            ),
+              title: Text(
+                  response.message.replaceFirst(RegExp(r'OBP-\d+: '), ""),
+                  textAlign: TextAlign.left,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis),
             ),
           ));
         }
       } catch (e) {
         print('Error: $e');
         Scaffold.of(context).showSnackBar(SnackBar(
-          content: Row(
-            children: <Widget>[
-              Icon(
-                Icons.warning,
-                color: Colors.yellow,
-              ),
-              Text('  Server side error, please try again!'),
-            ],
+          content: ListTile(leading: Icon(
+            Icons.warning,
+            color: Colors.yellow,
+          ),
+            title: Text('Server side error, please try again!'),
           ),
         ));
       } finally {
@@ -164,61 +156,49 @@ class _AuthContextUpdatePageState extends State<AuthContextUpdatePage> {
           var challengeStatus = response.data['status'] as String;
           if (challengeStatus == 'ACCEPTED') {
             Scaffold.of(context).showSnackBar(SnackBar(
-                content: Row(
-              children: <Widget>[
-                Icon(
-                  CommunityMaterialIcons.hand_peace,
-                  color: Colors.green,
-                ),
-                Text('  Success!'),
-              ],
-            )));
+                content: ListTile(
+                  leading: Icon(
+                    CommunityMaterialIcons.hand_peace,
+                    color: Colors.green,
+                  ),
+                  title: Text('Success!'),
+                )
+            ));
           } else {
             Scaffold.of(context).showSnackBar(SnackBar(
-                content: Row(
-              children: <Widget>[
-                Icon(
+                content: ListTile(leading: Icon(
                   Icons.warning,
                   color: Colors.yellow,
                 ),
-                Text('  Answer is not correct!'),
-              ],
-            )));
+                  title: Text('Answer is not correct!'),
+                )
+            ));
           }
         } else {
           print('Error: ${response.message}');
           Scaffold.of(context).showSnackBar(SnackBar(
-            content: Column(
-              children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Icon(
-                      Icons.warning,
-                      color: Colors.yellow,
-                    ),
-                    Expanded(
-                        child: Text(
-                            '  Server side error: ${response.message.replaceFirst(RegExp(r'OBP-\d+: '), "")}',
-                            overflow: TextOverflow.ellipsis)),
-                  ],
-                ),
-              ],
+            content: ListTile(leading: Icon(
+              Icons.warning,
+              color: Colors.yellow,
+            ),
+              title: Text(
+                  '  Server side error: ${response.message.replaceFirst(RegExp(r'OBP-\d+: '), "")}',
+                  textAlign: TextAlign.left,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis),
             ),
           ));
         }
       } catch (e) {
         print('Error: $e');
         Scaffold.of(context).showSnackBar(SnackBar(
-            content: Row(
-          children: <Widget>[
-            Icon(
-              Icons.warning,
-              color: Colors.yellow,
-            ),
-            Text('  Server side error, please try again!'),
-          ],
-        )));
+              content: ListTile(leading: Icon(
+                Icons.warning,
+                color: Colors.yellow,
+              ),
+              title: Text('Server side error, please try again!'),
+            )
+        ));
       } finally {
         setState(() {
           this._isLoading = false;

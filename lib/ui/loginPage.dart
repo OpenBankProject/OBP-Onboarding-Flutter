@@ -48,28 +48,22 @@ class _LoginPageState extends State<LoginPage> {
           this.widget.loginFun();
         } else {
           Scaffold.of(context).showSnackBar(SnackBar(
-              content: Row(
-            children: <Widget>[
-              Icon(
+              content: ListTile(leading: Icon(
                 Icons.warning,
                 color: Colors.yellow,
               ),
-              Text('  Incorrect User name or password!'),
-            ],
-          )));
+                title: Text('Incorrect User name or password!'),
+              )));
         }
       } catch (e) {
         print('Error: $e');
         Scaffold.of(context).showSnackBar(SnackBar(
-            content: Row(
-          children: <Widget>[
-            Icon(
+            content: ListTile(leading: Icon(
               Icons.warning,
               color: Colors.yellow,
             ),
-            Text('  Login fail, for server side error!'),
-          ],
-        )));
+              title: Text('Login fail, for server side error!'),
+            )));
       } finally {
         setState(() {
           this._isLoading = false;
@@ -88,15 +82,13 @@ class _LoginPageState extends State<LoginPage> {
         this.widget.loginFun();
       } else {
         Scaffold.of(context).showSnackBar(SnackBar(
-            content: Row(
-          children: <Widget>[
-            Icon(
+            content: ListTile(leading: Icon(
               Icons.warning,
               color: Colors.yellow,
             ),
-            Text('    Login fail, for server side error! Please retry.'),
-          ],
-        )));
+             title: Text('Login fail, for server side error! Please retry.'),
+            )
+        ));
       }
     } finally {
       setState(() {
@@ -243,14 +235,12 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: EdgeInsets.only(top: 10.0),
-                      child: GoogleSignInButton(
+                    GoogleSignInButton(
+                      textStyle: TextStyle(fontSize: 15, color: Colors.white),
                       splashColor: Colors.green,
                       onPressed: () => this.googleLogin(context),
                       darkMode: true, // default: false
-                    ),
-                    ),
+                    )
                   ],
                 ),
               ),
