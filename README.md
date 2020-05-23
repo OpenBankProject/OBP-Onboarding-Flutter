@@ -17,4 +17,5 @@ samples, guidance on mobile development, and a full API reference.
 
 ## Configure
 
-Replace YOURDIRECTLOGIN in lib/main.dart:9 with a working obp direct login token.
+Replace `_baseUrl` with your obp_api base url .
+Replace `consumerKey` with one valid value.
