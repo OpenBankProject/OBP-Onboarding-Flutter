@@ -82,8 +82,7 @@ class AuthUtil {
     };
   }
 
-  @override
-  Future<User> sinInWithSocial() async {
+  Future<User> sinInWithGoogle() async {
 
     _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount account){
       resetHeader(account);
@@ -93,7 +92,7 @@ class AuthUtil {
     try {
       signInAccount = await _googleSignIn.signIn();
 
-      resetHeader(signInAccount);
+      await resetHeader(signInAccount);
 
       ObpResponse response = await httpRequest.get(constants.currentUserUrl, headers: authHeaders);
       if(response.isSuccess()) {

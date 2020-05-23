@@ -77,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         this._isLoading = true;
       });
-      User user = await auth.sinInWithSocial();
+      User user = await auth.sinInWithGoogle();
       if (user != null) {
         this.widget.loginFun();
       } else {
