@@ -168,7 +168,6 @@ class _LoginPageState extends State<LoginPage> {
                                         ? 'UserName can\'t be empty'
                                         : null,
                                     onSaved: (value) => _userName = value,
-                                    initialValue: 'susan.xuk.x@example.com',
                                   ),
                                 ),
                               ),
@@ -196,7 +195,6 @@ class _LoginPageState extends State<LoginPage> {
                                         ? 'Password can\'t be empty'
                                         : null,
                                     onSaved: (value) => _password = value,
-                                    initialValue: '43ca4d',
                                   ),
                                 ),
                               ),

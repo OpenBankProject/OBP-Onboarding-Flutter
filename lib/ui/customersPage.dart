@@ -94,7 +94,7 @@ class _CustomersPageState extends State<CustomersPage> {
                 var firstCustomer = customers.first;
                 if (index == 0) {
                   return Text(
-                    'Welcome ${firstCustomer.title} ${firstCustomer.legal_name}',
+                    'Welcome ${firstCustomer.title ?? ""} ${firstCustomer.legal_name}',
                     style: TextStyle(fontSize: 18),
                   );
                 } else {
