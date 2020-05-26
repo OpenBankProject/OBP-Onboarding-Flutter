@@ -28,7 +28,7 @@ class _AuthContextUpdatePageState extends State<AuthContextUpdatePage> {
   void initState() {
     super.initState();
     if (banks.isEmpty) {
-      httpRequest.get(constants.getBanksUrl).then((response) {
+      httpRequest.get(constants.getBanksUrl, headers: auth.authHeaders).then((response) {
         if (response.isSuccess()) {
           var banksJson = response.data["banks"] as List<dynamic>;
           setState(() {

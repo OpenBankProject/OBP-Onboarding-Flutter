@@ -45,7 +45,7 @@ class _CustomersPageState extends State<CustomersPage> {
     // initiate banks
         {
       if (bankIdToBankName.isEmpty) {
-        ObpResponse response = await httpRequest.get(constants.getBanksUrl);
+        ObpResponse response = await httpRequest.get(constants.getBanksUrl, headers: auth.authHeaders);
         if (response.isSuccess()) {
           var banksJson = response.data["banks"] as List<dynamic>;
           var bankIds = banksJson.map<String>((bk) => bk['id'] as String);
