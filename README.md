@@ -15,5 +15,9 @@ samples, guidance on mobile development, and a full API reference.
 
 ## Configure
 
-Replace `_baseUrl` with your obp_api base url .
-Replace `consumerKey` with one valid value.
+Settings file is `lib/utils/constant.dart`.
+
+You should modify the following values:
+
+1. Replace `_baseUrl` with your obp_api base url .
+2. Replace `consumerKey` with one valid value.
