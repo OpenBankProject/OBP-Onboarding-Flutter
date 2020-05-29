@@ -1,10 +1,8 @@
-# hello_obp_flutter
+# OBP Onboarding in Flutter
 
-flutter sdk for openbankproject.com
+A flutter App to onboard users onto the OBP API using OAuth and various OBP APIs.
 
 ## Getting Started
-
-This project is a POC for using the Openbankproject api with Flutter.
 
 A few resources to get you started if this is your first Flutter project:
 
