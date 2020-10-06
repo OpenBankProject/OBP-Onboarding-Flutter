@@ -94,7 +94,7 @@ class _AuthContextUpdatePageState extends State<AuthContextUpdatePage> {
               buttons: [
                 DialogButton(
                   onPressed: () =>
-                      answerChallenge(userAuthContextUpdateId, answer),
+                      answerChallenge(userAuthContextUpdateId, answer, formValues['bank_id']),
                   child: Text(
                     "Answer Challenge",
                     style: TextStyle(color: Colors.white, fontSize: 20),
@@ -133,7 +133,7 @@ class _AuthContextUpdatePageState extends State<AuthContextUpdatePage> {
     }
   }
 
-  void answerChallenge(String userAuthContextUpdateId, String answer) async {
+  void answerChallenge(String userAuthContextUpdateId, String answer, String bankId) async {
     if (_answerKey.currentState.validate()) {
       _answerKey.currentState.save();
       Navigator.pop(context);
@@ -147,6 +147,7 @@ class _AuthContextUpdatePageState extends State<AuthContextUpdatePage> {
         var json = jsonEncode(jsonJson);
         var answerAuthContextUpdateChallengeUrl = constants
             .answerAuthContextUpdateChallengeUrl
+            .replaceFirst('BANK_ID', bankId)
             .replaceFirst('AUTH_CONTEXT_UPDATE_ID', userAuthContextUpdateId);
         ObpResponse response = await httpRequest.post(
             answerAuthContextUpdateChallengeUrl,
